@@ -89,7 +89,7 @@ Resources:
             - {'Fn::ImportValue': !Sub '${VPCStackName}-SecurityGroup'}
           SubnetId: {'Fn::ImportValue': !Sub '${VPCStackName}-Subnet'}
           PrivateIpAddresses:
-            - PrivateIpAddress: !Ref IPAddressWrk
+            - PrivateIpAddress: !Ref IPAddressIperfServer
               Primary: true
       Tags:
       - Key: Name
