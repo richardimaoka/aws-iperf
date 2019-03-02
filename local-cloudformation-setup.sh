@@ -20,7 +20,7 @@ do
             IPERF_CLIENT_IP="$2"
             shift 2
             ;;
-        '--iperf-client-ip' )
+        '--iperf-server-ip' )
             if [[ -z "$2" ]] || [[ "$2" =~ ^-+ ]]; then
                 echo "option --iperf-client-ip requires an argument -- $1" 1>&2
                 exit 1
