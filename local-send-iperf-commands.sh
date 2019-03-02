@@ -6,25 +6,16 @@ set -e
 # parse options, note that whitespace is needed (e.g. -c 4) between an option and the option argument
 #   Cloudformation related parameters:
 #    --iperf-server-ip  IP address of the EC2 instance running iPerf server 
-#    --instance-type    EC2 instance type for both iPerf client and server
 
 for OPT in "$@"
 do
     case "$OPT" in
-        '--iperf-client-ip' )
+        '--iperf-server-ip' )
             if [[ -z "$2" ]] || [[ "$2" =~ ^-+ ]]; then
-                echo "option --iperf-client-ip requires an argument -- $1" 1>&2
+                echo "option --iperf-server-ip requires an argument -- $1" 1>&2
                 exit 1
             fi
             IPERF_SERVER_IP="$2"
-            shift 2
-            ;;
-        '--instance-type' )
-            if [[ -z "$2" ]] || [[ "$2" =~ ^-+ ]]; then
-                echo "option --instance-type requires an argument -- $1" 1>&2
-                exit 1
-            fi
-            INSTANCE_TYPE="$2"
             shift 2
             ;;
         -*)
