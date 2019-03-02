@@ -31,7 +31,7 @@ Parameters:
 
 Resources:
   # Define EC2 instance for iperf client and server
-  EC2InstanceIperClient:
+  EC2InstanceIperfClient:
     Type: AWS::EC2::Instance
     Properties: 
       ImageId: "ami-0d7ed3ddb85b521a6"
@@ -63,7 +63,7 @@ Resources:
       Tags:
       - Key: Name
         Value: iperf-client-instance
-  EC2InstanceIperServer:
+  EC2InstanceIperfServer:
     Type: AWS::EC2::Instance
     Properties: 
       ImageId: "ami-0d7ed3ddb85b521a6"

@@ -43,7 +43,7 @@ aws ssm send-command \
   --instance-ids "${IPERF_SERVER_INSTANCE_ID}" \
   --document-name "AWS-RunShellScript" \
   --comment "aws-iperf command to run iperf server" \
-  --parameters commands=["iperf3 -s"] \
+  --parameters commands=["iperf3 -s &"] \
   --output text \
   --query "Command.CommandId"
 
