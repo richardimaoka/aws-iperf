@@ -93,4 +93,4 @@ Resources:
               Primary: true
       Tags:
       - Key: Name
-        Value: iperf-client-server
+        Value: iperf-server-instance

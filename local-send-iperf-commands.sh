@@ -29,7 +29,11 @@ done
 EC2_STACK_NAME="aws-iperf-ec2"
 
 # Make sure the web EC2 instance is up and running
-IPERF_SERVER_INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:aws:cloudformation:stack-name,Values=${EC2_STACK_NAME}" "Name=instance-state-name,Values=running" --output text --query "Reservations[*].Instances[*].InstanceId")
+IPERF_SERVER_INSTANCE_ID=$(aws ec2 describe-instances \
+  --filters "Name=tag:aws:cloudformation:stack-name,Values=${EC2_STACK_NAME}" \
+            "Name=instance-state-name,Values=running" \
+            "Name=tag:Name,Values=iperf-client-instance" \
+  --output text --query "Reservations[*].Instances[*].InstanceId")
 echo "Waiting until the following web-server EC2 instance is OK: ${IPERF_SERVER_INSTANCE_ID}"
 aws ec2 wait instance-status-ok --instance-ids "${IPERF_SERVER_INSTANCE_ID}"
 
@@ -48,7 +52,11 @@ aws ssm send-command \
 sleep 30
 
 # Make sure the web EC2 instance is up and running
-IPERF_CLIENT_INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:aws:cloudformation:stack-name,Values=${EC2_STACK_NAME}" "Name=instance-state-name,Values=running" --output text --query "Reservations[*].Instances[*].InstanceId")
+IPERF_CLIENT_INSTANCE_ID=$(aws ec2 describe-instances \
+  --filters "Name=tag:aws:cloudformation:stack-name,Values=${EC2_STACK_NAME}" \
+            "Name=instance-state-name,Values=running" \
+            "Name=tag:Name,Values=iperf-server-instance" \
+  --output text --query "Reservations[*].Instances[*].InstanceId")
 echo "Waiting until the following web-server EC2 instance is OK: ${IPERF_CLIENT_INSTANCE_ID}"
 aws ec2 wait instance-status-ok --instance-ids "${IPERF_CLIENT_INSTANCE_ID}"
 
