@@ -27,7 +27,7 @@ Resources:
       VpcId: !Ref VPC
       PeerVpcId:  {'Fn::ImportValue': !Sub '${StackNameVPCMain}-VPCId'}
       PeerOwnerId: !Ref PeerVPCAccountId
-      PeerRoleArn: {'Fn::ImportValue': !Sub '${StackNameVPCMain}-RoleArn'}
+      PeerRoleArn: {'Fn::ImportValue': !Sub '${StackNameVPCMain}-RoleARN'}
   Subnet:
     Type: AWS::EC2::Subnet
     Properties:
