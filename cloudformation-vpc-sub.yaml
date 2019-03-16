@@ -23,9 +23,9 @@ Resources:
     Type: 'AWS::EC2::VPCPeeringConnection'
     Properties:
       VpcId: !Ref VPC
-      PeerVpcId:  {'Fn::ImportValue': '${VPCMainStack}-VPCId'}
+      PeerVpcId:  {'Fn::ImportValue': !Sub '${VPCMainStack}-VPCId'}
       PeerOwnerId: !Ref PeerVPCAccountId
-      PeerRoleArn: {'Fn::ImportValue': '${VPCMainStack}-RoleArn'}
+      PeerRoleArn: {'Fn::ImportValue': !Sub '${VPCMainStack}-RoleArn'}
   Subnet:
     Type: AWS::EC2::Subnet
     Properties:
