@@ -38,10 +38,10 @@ do
     --template-body file://cloudformation-ec2.yaml \
     --capabilities CAPABILITY_NAMED_IAM \
     --parameters ParameterKey=EC2InstanceType,ParameterValue="$(echo ${params} | jq -r '.instance_type')" \
-                 ParameterKey=IPerfServerStack,ParameterValue="$(echo ${params} | jq -r '.iperf_server_stack')" \
-                 ParameterKey=IPerfClientStack,ParameterValue="$(echo ${params} | jq -r '.iperf_client_stack')" \
-                 ParameterKey=IPerfServerSubnet,ParameterValue="$(echo ${params} | jq -r '.iperf_server_subnet')" \
-                 ParameterKey=IPerfClientSubnet,ParameterValue="$(echo ${params} | jq -r '.iperf_client_subnet')" \
-                 ParameterKey=IPerfServerIPAddress,ParameterValue="$(echo ${params} | jq -r '.iperf_server_ip_address')" \
-                 ParameterKey=IPerfClientIPAddress,ParameterValue="$(echo ${params} | jq -r '.iperf_client_ip_address')"
+                 ParameterKey=StackNameIPerfServer,ParameterValue="$(echo ${params} | jq -r '.iperf_server_stack')" \
+                 ParameterKey=StackNameIPerfClient,ParameterValue="$(echo ${params} | jq -r '.iperf_client_stack')" \
+                 ParameterKey=SubnetIPerfServer,ParameterValue="$(echo ${params} | jq -r '.iperf_server_subnet')" \
+                 ParameterKey=SubnetIPerfClient,ParameterValue="$(echo ${params} | jq -r '.iperf_client_subnet')" \
+                 ParameterKey=IPAddressIPerfServer,ParameterValue="$(echo ${params} | jq -r '.iperf_server_ip_address')" \
+                 ParameterKey=IPAddressIPerfClient,ParameterValue="$(echo ${params} | jq -r '.iperf_client_ip_address')"
 done
