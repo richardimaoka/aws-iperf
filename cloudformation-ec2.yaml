@@ -99,8 +99,8 @@ Resources:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
           GroupSet:
-            - {'Fn::ImportValue': '${StackNameIPerfServer}-SecurityGroup'}
-          SubnetId: {'Fn::ImportValue': '${StackNameIPerfServer}-${SubnetIPerfServer}'}
+            - {'Fn::ImportValue': !Sub '${StackNameIPerfServer}-SecurityGroup'}
+          SubnetId: {'Fn::ImportValue': !Sub '${StackNameIPerfServer}-${SubnetIPerfServer}'}
           PrivateIpAddresses:
             - PrivateIpAddress: !Ref IPAddressIPerfServer
               Primary: true
@@ -131,7 +131,7 @@ Resources:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
           GroupSet:
-            - {'Fn::ImportValue': '${StackNameIPerfClient}-SecurityGroup' }
+            - {'Fn::ImportValue': !Sub '${StackNameIPerfClient}-SecurityGroup' }
           SubnetId: {'Fn::ImportValue': !Sub '${StackNameIPerfClient}-${SubnetIPerfClient}'}
           PrivateIpAddresses:
             - PrivateIpAddress: !Ref IPAddressIPerfClient
