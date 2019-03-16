@@ -24,7 +24,8 @@ aws cloudformation create-stack \
   --template-body file://cloudformation-vpc-sub.yaml \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameters ParameterKey=SSHLocation,ParameterValue="${SSH_LOCATION}" \
-               ParameterKey=PeerVPCAccountId,ParameterValue="${AWS_ACCOUNT_ID}"
+               ParameterKey=PeerVPCAccountId,ParameterValue="${AWS_ACCOUNT_ID}" \
+               ParameterKey=VPCMainStack,ParameterValue="${MAIN_VPC_STACK_NAME}"
 
 echo "Waiting until the Cloudformation VPC sub stack is CREATE_COMPLETE"
 aws cloudformation wait stack-create-complete --stack-name "${SUB_VPC_STACK_NAME}"
