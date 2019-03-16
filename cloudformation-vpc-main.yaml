@@ -145,12 +145,12 @@ Outputs:
     Description: Subnet Same AvailabilityZone
     Value: !Ref SubnetSameAZ
     Export:
-      Name: !Sub "${AWS::StackName}-SubnetSameAz"
+      Name: !Sub "${AWS::StackName}-SubnetSameAZ"
   SubnetDifferentAZ:
     Description: Subnet Different AvailabilityZone
     Value: !Ref SubnetDifferentAZ
     Export:
-      Name: !Sub "${AWS::StackName}-SubnetDifferentAz"      
+      Name: !Sub "${AWS::StackName}-SubnetDifferentAZ"      
   RoleARN:
     Export:
       Name: !Sub "${AWS::StackName}-RoleARN"      

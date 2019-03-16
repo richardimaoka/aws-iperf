@@ -34,7 +34,7 @@ Parameters:
     AllowedValues:
       - SubnetSameAZ
       - SubnetDifferentAZ
-      - SubnetDifferentRegionAZ
+      - SubnetDifferentRegion
   IPAddressIPerfServer:
     Description: Local IP address of the iperf server
     Type: String
