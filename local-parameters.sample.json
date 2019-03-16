@@ -1,8 +1,12 @@
 [
   {
     "test_seq_num": 1,
-    "iperf_server_local_ip": "10.0.1.1",
-    "iperf_client_local_ip": "10.0.2.1",
+    "stack_name_iperf_server": "StackNameMainVPC",
+    "stack_name_iperf_client": "StackNameMainVPC",
+    "subnet_iperf_server": "SameAZSubnet",
+    "subnet_iperf_client": "SameAZSubnet",
+    "local_ip_iperf_server": "10.0.1.1",
+    "local_ip_iperf_client": "10.0.2.1",
     "instance_type": "m5.xlarge"
   }
 ]
