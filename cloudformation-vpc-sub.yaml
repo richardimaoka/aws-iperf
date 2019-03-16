@@ -9,10 +9,6 @@ Parameters:
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
   PeerVPCAccountId:
     Type: String
-  PeerVPCId:
-    Type: String
-  PeerRoleArn:
-    Type: String
 
 Resources:
   # Define VPC and Subnet
@@ -27,9 +23,9 @@ Resources:
     Type: 'AWS::EC2::VPCPeeringConnection'
     Properties:
       VpcId: !Ref VPC
-      PeerVpcId: !Ref PeerVPCId
+      PeerVpcId:  {'Fn::ImportValue': '${VPCMainStack}-VPCId'}
       PeerOwnerId: !Ref PeerVPCAccountId
-      PeerRoleArn: !Ref PeerRoleArn
+      PeerRoleArn: {'Fn::ImportValue': '${VPCMainStack}-RoleArn'}
   Subnet:
     Type: AWS::EC2::Subnet
     Properties:

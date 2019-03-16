@@ -152,6 +152,8 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}-SubnetDifferentAz"      
   RoleARN:
+    Export:
+      Name: !Sub "${AWS::StackName}-RoleARN"      
     Value: !GetAtt 
       - PeerRole
       - Arn
