@@ -3,69 +3,41 @@
 # Any subsequent(*) commands which fail will cause the shell script to exit immediately
 set -e
 
-# parse options, note that whitespace is needed (e.g. -c 4) between an option and the option argument
-#   Cloudformation related parameters:
-#    --iperf-client-ip  IP address of the EC2 instance running iPerf client 
-#    --iperf-server-ip  IP address of the EC2 instance running iPerf server 
-#    --instance-type    EC2 instance type for both iPerf client and server
-
-for OPT in "$@"
-do
-    case "$OPT" in
-        '--iperf-client-ip' )
-            if [[ -z "$2" ]] || [[ "$2" =~ ^-+ ]]; then
-                echo "option --wrk-local-ip requires an argument -- $1" 1>&2
-                exit 1
-            fi
-            IPERF_CLIENT_IP="$2"
-            shift 2
-            ;;
-        '--iperf-server-ip' )
-            if [[ -z "$2" ]] || [[ "$2" =~ ^-+ ]]; then
-                echo "option --iperf-client-ip requires an argument -- $1" 1>&2
-                exit 1
-            fi
-            IPERF_SERVER_IP="$2"
-            shift 2
-            ;;
-        '--instance-type' )
-            if [[ -z "$2" ]] || [[ "$2" =~ ^-+ ]]; then
-                echo "option --instance-type requires an argument -- $1" 1>&2
-                exit 1
-            fi
-            INSTANCE_TYPE="$2"
-            shift 2
-            ;;
-        -*)
-            echo "illegal option -- '$(echo "$1" | sed 's/^-*//')'" 1>&2
-            exit 1
-            ;;
-
-    esac
-done
-
-# Create the Cloudformation VPC-only stack from the local template `cloudformation-vpc.yaml`
-VPC_STACK_NAME="aws-iperf-vpc"
+# Create the Cloudformation VPC-only stack from the local template `cloudformation-vpc-main.yaml`
 SSH_LOCATION="$(curl ifconfig.co 2> /dev/null)/32"
-# aws cloudformation create-stack \
-#   --stack-name "${VPC_STACK_NAME}" \
-#   --template-body file://cloudformation-vpc.yaml \
-#   --capabilities CAPABILITY_NAMED_IAM \
-#   --parameters ParameterKey=SSHLocation,ParameterValue="${SSH_LOCATION}"
-
-# Create the Cloudformation EC2 stack from `cloudformation-ec2.yaml`
-EC2_STACK_NAME="aws-iperf-ec2"
+MAIN_VPC_STACK_NAME="MainVPCStack"
 aws cloudformation create-stack \
-  --stack-name "${EC2_STACK_NAME}" \
-  --template-body file://cloudformation-ec2.yaml \
+  --stack-name "${MAIN_VPC_STACK_NAME}" \
+  --template-body file://cloudformation-vpc-main.yaml \
   --capabilities CAPABILITY_NAMED_IAM \
-  --parameters ParameterKey=VPCStackName,ParameterValue="${VPC_STACK_NAME}" \
-               ParameterKey=EC2InstanceType,ParameterValue="${INSTANCE_TYPE}" \
-               ParameterKey=IPAddressIperfClient,ParameterValue="${IPERF_CLIENT_IP}" \
-               ParameterKey=IPAddressIperfServer,ParameterValue="${IPERF_SERVER_IP}"
+  --parameters ParameterKey=SSHLocation,ParameterValue="${SSH_LOCATION}"
 
-echo "Waiting until the Cloudformation VPC stack is CREATE_COMPLETE"
-aws cloudformation wait stack-create-complete --stack-name "${VPC_STACK_NAME}"
+# Create the Cloudformation VPC-only stack from the local template `cloudformation-vpc-sub.yaml`
+SUB_VPC_STACK_NAME="SubVPCStack"
+aws cloudformation create-stack \
+  --stack-name "${SUB_VPC_STACK_NAME}" \
+  --template-body file://cloudformation-vpc-main.yaml \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --parameters ParameterKey=SSHLocation,ParameterValue="${SSH_LOCATION}"
 
-echo "Waiting until the Cloudformation EC2 stack is CREATE_COMPLETE"
-aws cloudformation wait stack-create-complete --stack-name "${EC2_STACK_NAME}"
+echo "Waiting until the Cloudformation VPC main stack is CREATE_COMPLETE"
+aws cloudformation wait stack-create-complete --stack-name "${MAIN_VPC_STACK_NAME}"
+
+echo "Waiting until the Cloudformation VPC sub stack is CREATE_COMPLETE"
+aws cloudformation wait stack-create-complete --stack-name "${SUB_VPC_STACK_NAME}"
+
+for params in $(jq -c '.[]' local-parameters.json)
+do
+  EC2_STACK_NAME="abcedga"
+  aws cloudformation create-stack \
+    --stack-name "${EC2_STACK_NAME}" \
+    --template-body file://cloudformation-ec2.yaml \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --parameters ParameterKey=EC2InstanceType,ParameterValue="$(echo ${params} | jq -r '.instance_type')" \
+                 ParameterKey=IPerfServerStack,ParameterValue="$(echo ${params} | jq -r '.iperf_server_stack')" \
+                 ParameterKey=IPerfClientStack,ParameterValue="$(echo ${params} | jq -r '.iperf_client_stack')" \
+                 ParameterKey=IPerfServerSubnet,ParameterValue="$(echo ${params} | jq -r '.iperf_server_subnet')" \
+                 ParameterKey=IPerfClientSubnet,ParameterValue="$(echo ${params} | jq -r '.iperf_client_subnet')" \
+                 ParameterKey=IPerfServerIPAddress,ParameterValue="$(echo ${params} | jq -r '.iperf_server_ip_address')" \
+                 ParameterKey=IPerfClientIPAddress,ParameterValue="$(echo ${params} | jq -r '.iperf_client_ip_address')"
+done

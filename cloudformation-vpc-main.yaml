@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
+
 Parameters:
   SSHLocation:
     Description: The IP address range that can be used to SSH to the EC2 instances
@@ -7,31 +8,29 @@ Parameters:
     MaxLength: "18"
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  PeerRequesterAccountId:
+    Type: String
 
 Resources:
-  # Resources for SSM
-  # https://docs.aws.amazon.com/systems-manager/latest/userguide/automation-cf.html#automation-cf-create
-  RoleSSM:
-    Type: AWS::IAM::Role
+  PeerRole:
+    Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
         Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - ssm.amazonaws.com
-            - ec2.amazonaws.com
-          Action: sts:AssumeRole
-      ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
-      Path: "/"
-  InstanceProfileSSM:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: "/"
-      Roles:
-      - !Ref RoleSSM
+          - Principal:
+              AWS: !Ref PeerRequesterAccountId
+            Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'ec2:AcceptVpcPeeringConnection'
+                Resource: '*'
 
   # Define VPC and Subnet
   VPC:
@@ -40,15 +39,25 @@ Resources:
       CidrBlock: 10.0.0.0/16
       Tags:
         - Key: Name
-          Value: aws-iperf-vpc
-  Subnet:
+          Value: aws-iperf-vpc-main
+  SubnetSameAZ:
     Type: AWS::EC2::Subnet
     Properties:
       CidrBlock: 10.0.0.0/28
+      AvailabilityZone: ap-northeast-1a
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: aws-iperf-subnet
+          Value: aws-iperf-subnet-same-az
+  SubnetDifferentAZ:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.0.17/28
+      AvailabilityZone: ap-northeast-1c
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: aws-iperf-subnet-different-az
 
   # Define Internet Gateway and the attachment to VPC          
   InternetGateway:
@@ -77,12 +86,16 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
       RouteTableId: !Ref RouteTable      
-  SubnetRouteTableAssociation:
+  SubnetSameAZRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref RouteTable
-      SubnetId: !Ref Subnet
-
+      SubnetId: !Ref SubnetSameAZ
+  SubnetDifferentAZRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTable
+      SubnetId: !Ref SubnetDifferentAZ
   # Define Security Group and its inbound rules (= ingress).
   # The outbound (egress) rules are automatically set as "Allow All".
   SecurityGroup:
@@ -118,18 +131,27 @@ Resources:
       CidrIp: !Ref SSHLocation
 
 Outputs:
-  InstanceProfile:
-    Description: Instance profile for EC2 to use AWS CLI and EC2 SSM
-    Value: !Ref InstanceProfileSSM
+  VPC:
+    Description: VPC
+    Value: !Ref VPC
     Export:
-      Name: !Sub "${AWS::StackName}-InstanceProfile"
+      Name: !Sub "${AWS::StackName}-VPC"
   SecurityGroup:
     Description: SecurityGroup
     Value: !Ref SecurityGroup
     Export:
       Name: !Sub "${AWS::StackName}-SecurityGroup"
-  Subnet:
-    Description: Subnet
-    Value: !Ref Subnet
+  SubnetSameAZ:
+    Description: Subnet Same AvailabilityZone
+    Value: !Ref SubnetSameAZ
     Export:
-      Name: !Sub "${AWS::StackName}-Subnet"
+      Name: !Sub "${AWS::StackName}-SubnetSameAz"
+  SubnetDifferentAZ:
+    Description: Subnet Different AvailabilityZone
+    Value: !Ref SubnetDifferentAZ
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetDifferentAz"      
+  RoleARN:
+    Value: !GetAtt 
+      - PeerRole
+      - Arn

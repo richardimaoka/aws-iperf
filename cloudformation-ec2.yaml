@@ -1,8 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
+
 Parameters:
-  VPCStackName:
-    Description: Cloudformation stack name of the VPC stack
-    Type: String
   # https://aws.amazon.com/ec2/instance-types/
   EC2InstanceType: 
     Description: Instance type for iperf server and client
@@ -14,14 +12,37 @@ Parameters:
       - m5.xlarge
       - m5.2xlarge
       - m5.4large
-  IPAddressIperfClient:
+  IPerfServerStack:
+    Description: iperf server's stack name
+    Type: String
+    AllowedValues:
+      - MainVPCStack
+  IPerfClientStack:
+    Description: iperf client's stack name
+    Type: String
+    AllowedValues:
+      - MainVPCStack
+      - SubVPCStack
+  IPerfServerSubnet:
+    Description: iperf server's stack name
+    Type: String
+    AllowedValues:
+      - SameAZSubnet
+  IPerfClientSubnet:
+    Description: iperf server's stack name
+    Type: String
+    AllowedValues:
+      - SameAZSubnet
+      - DifferentAZSubnet
+      - DifferentRegionAZSubnet
+  IperfClientIPAddress:
     Description: Local IP address of wrk
     Type: String
     MinLength: "7"
     MaxLength: "15"
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
     ConstraintDescription: must be a valid IP of the form x.x.x.x, in the subnet CIDR range 10.0.0.0/16 defined in this template.
-  IPAddressIperfServer:
+  IperfServerIPAddress:
     Description: Local IP address of the web server
     Type: String
     MinLength: "7"
@@ -30,7 +51,62 @@ Parameters:
     ConstraintDescription: must be a valid IP of the form x.x.x.x, in the subnet CIDR range 10.0.0.0/16 defined in this template.
 
 Resources:
+  # Resources for SSM
+  # https://docs.aws.amazon.com/systems-manager/latest/userguide/automation-cf.html#automation-cf-create
+  RoleSSM:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ssm.amazonaws.com
+            - ec2.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      Path: "/"
+  InstanceProfileSSM:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - !Ref RoleSSM
+
   # Define EC2 instance for iperf client and server
+  EC2InstanceIperfServer:
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: "ami-0d7ed3ddb85b521a6"
+      InstanceType: !Ref EC2InstanceType
+      # You should create an EC2 key pair in advance, as there is no key-pair resource in CloudFormation
+      # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-keypair.html
+      KeyName: "demo-key-pair"
+      # https://aws.amazon.com/premiumsupport/knowledge-center/network-throughput-benchmark-linux-ec2/
+      UserData:
+        Fn::Base64: |
+            #!/bin/bash
+            yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            yum -y install iperf
+            yum -y install iperf3
+            yum -y install git
+            cd /home/ec2-user
+            git clone https://github.com/richardimaoka/aws-iperf
+            ./remote-iperf-server.sh
+      NetworkInterfaces: 
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          GroupSet:
+            - {'Fn::ImportValue': '${IPerfServerStack}-SecurityGroup'}
+          SubnetId: {'Fn::ImportValue': '${IPerfServerStack}-${IPerfServerSubnet}'}
+          PrivateIpAddresses:
+            - PrivateIpAddress: !Ref IperfServerIPAddress
+              Primary: true
+      Tags:
+      - Key: Name
+        Value: iperf-server-instance
   EC2InstanceIperfClient:
     Type: AWS::EC2::Instance
     Properties: 
@@ -40,7 +116,7 @@ Resources:
       # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-keypair.html
       KeyName: "demo-key-pair"
       # To allow running commands via SSM
-      IamInstanceProfile: {'Fn::ImportValue': !Sub '${VPCStackName}-InstanceProfile'}
+      IamInstanceProfile: InstanceProfileSSM
       # https://aws.amazon.com/premiumsupport/knowledge-center/network-throughput-benchmark-linux-ec2/
       UserData:
         Fn::Base64: |
@@ -55,43 +131,11 @@ Resources:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
           GroupSet:
-            - {'Fn::ImportValue': !Sub '${VPCStackName}-SecurityGroup'}
-          SubnetId: {'Fn::ImportValue': !Sub '${VPCStackName}-Subnet'}
+            - {'Fn::ImportValue': '${IPerfClientStack}-SecurityGroup' }
+          SubnetId: {'Fn::ImportValue': !Sub '${IPerfClientStack}-${IPerfClientSubnet}'}
           PrivateIpAddresses:
-            - PrivateIpAddress: !Ref IPAddressIperfClient
+            - PrivateIpAddress: !Ref IperfClientIPAddress
               Primary: true
       Tags:
       - Key: Name
         Value: iperf-client-instance
-  EC2InstanceIperfServer:
-    Type: AWS::EC2::Instance
-    Properties: 
-      ImageId: "ami-0d7ed3ddb85b521a6"
-      InstanceType: !Ref EC2InstanceType
-      # You should create an EC2 key pair in advance, as there is no key-pair resource in CloudFormation
-      # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-keypair.html
-      KeyName: "demo-key-pair"
-      # To allow running commands via SSM
-      IamInstanceProfile: {'Fn::ImportValue': !Sub '${VPCStackName}-InstanceProfile'}
-      # https://aws.amazon.com/premiumsupport/knowledge-center/network-throughput-benchmark-linux-ec2/
-      UserData:
-        Fn::Base64: |
-            #!/bin/bash
-            yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-            yum -y install iperf
-            yum -y install iperf3
-            yum -y install git
-            cd /home/ec2-user
-            git clone https://github.com/richardimaoka/aws-iperf
-      NetworkInterfaces: 
-        - AssociatePublicIpAddress: "true"
-          DeviceIndex: "0"
-          GroupSet:
-            - {'Fn::ImportValue': !Sub '${VPCStackName}-SecurityGroup'}
-          SubnetId: {'Fn::ImportValue': !Sub '${VPCStackName}-Subnet'}
-          PrivateIpAddresses:
-            - PrivateIpAddress: !Ref IPAddressIperfServer
-              Primary: true
-      Tags:
-      - Key: Name
-        Value: iperf-server-instance
