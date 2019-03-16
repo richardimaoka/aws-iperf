@@ -1,7 +1,7 @@
 [
   {
-    "stack_name_iperf_server": "StackNameMainVPC",
-    "stack_name_iperf_client": "StackNameMainVPC",
+    "stack_name_iperf_server": "StackNameVPCMain",
+    "stack_name_iperf_client": "StackNameVPCMain",
     "subnet_iperf_server": "SubnetSameAZ",
     "subnet_iperf_client": "SubnetSameAZ",
     "local_ip_iperf_server": "10.0.1.1",
