@@ -11,7 +11,7 @@ aws cloudformation create-stack \
   --stack-name "${MAIN_VPC_STACK_NAME}" \
   --template-body file://cloudformation-vpc-main.yaml \
   --capabilities CAPABILITY_NAMED_IAM \
-  --parameters ParameterKey=SSHLocation,ParameterValue="${SSH_LOCATION}"
+  --parameters ParameterKey=SSHLocation,ParameterValue="${SSH_LOCATION}" \
                ParameterKey=PeerRequesterAccountId,ParameterValue="${AWS_ACCOUNT_ID}"
 
 # Create the Cloudformation VPC-only stack from the local template `cloudformation-vpc-sub.yaml`
