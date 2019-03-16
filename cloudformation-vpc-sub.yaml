@@ -116,8 +116,8 @@ Outputs:
     Value: !Ref SecurityGroup
     Export:
       Name: !Sub "${AWS::StackName}-SecurityGroup"
-  SubnetDifferentRegion:
+  Subnet:
     Description: Subnet Different Region
-    Value: !Ref SubnetSameAZ
+    Value: !Ref Subnet
     Export:
       Name: !Sub "${AWS::StackName}-SubnetDifferentRegion"
