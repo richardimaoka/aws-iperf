@@ -24,12 +24,12 @@ Parameters:
       - StackNameVPCMain
       - StackNameVPCSub
   SubnetIPerfServer:
-    Description: iperf server's stack name
+    Description: iperf server's subnet
     Type: String
     AllowedValues:
       - SubnetSameAZ
   SubnetIPerfClient:
-    Description: iperf server's stack name
+    Description: iperf server's subnet
     Type: String
     AllowedValues:
       - SubnetSameAZ
