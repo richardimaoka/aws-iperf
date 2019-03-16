@@ -12,38 +12,38 @@ Parameters:
       - m5.xlarge
       - m5.2xlarge
       - m5.4large
-  IPerfServerStack:
+  StackNameIPerfServer:
     Description: iperf server's stack name
     Type: String
     AllowedValues:
-      - MainVPCStack
-  IPerfClientStack:
+      - StackNameMainVPC
+  StackNameIPerfClient:
     Description: iperf client's stack name
     Type: String
     AllowedValues:
-      - MainVPCStack
-      - SubVPCStack
-  IPerfServerSubnet:
+      - StackNameMainVPC
+      - StackNameSubVPC
+  SubnetIPerfServer:
     Description: iperf server's stack name
     Type: String
     AllowedValues:
-      - SameAZSubnet
-  IPerfClientSubnet:
+      - SubnetSameAZ
+  SubnetIPerfClient:
     Description: iperf server's stack name
     Type: String
     AllowedValues:
-      - SameAZSubnet
-      - DifferentAZSubnet
-      - DifferentRegionAZSubnet
-  IperfClientIPAddress:
-    Description: Local IP address of wrk
+      - SubnetSameAZ
+      - SubnetDifferentAZ
+      - SubnetDifferentRegionAZ
+  IPAddressIPerfServer:
+    Description: Local IP address of the web server
     Type: String
     MinLength: "7"
     MaxLength: "15"
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
     ConstraintDescription: must be a valid IP of the form x.x.x.x, in the subnet CIDR range 10.0.0.0/16 defined in this template.
-  IperfServerIPAddress:
-    Description: Local IP address of the web server
+  IPAddressIPerfClient:
+    Description: Local IP address of wrk
     Type: String
     MinLength: "7"
     MaxLength: "15"
@@ -99,10 +99,10 @@ Resources:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
           GroupSet:
-            - {'Fn::ImportValue': '${IPerfServerStack}-SecurityGroup'}
-          SubnetId: {'Fn::ImportValue': '${IPerfServerStack}-${IPerfServerSubnet}'}
+            - {'Fn::ImportValue': '${StackNameIPerfServer}-SecurityGroup'}
+          SubnetId: {'Fn::ImportValue': '${StackNameIPerfServer}-${SubnetIPerfServer}'}
           PrivateIpAddresses:
-            - PrivateIpAddress: !Ref IperfServerIPAddress
+            - PrivateIpAddress: !Ref IPAddressIPerfServer
               Primary: true
       Tags:
       - Key: Name
@@ -131,10 +131,10 @@ Resources:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
           GroupSet:
-            - {'Fn::ImportValue': '${IPerfClientStack}-SecurityGroup' }
-          SubnetId: {'Fn::ImportValue': !Sub '${IPerfClientStack}-${IPerfClientSubnet}'}
+            - {'Fn::ImportValue': '${StackNameIPerfClient}-SecurityGroup' }
+          SubnetId: {'Fn::ImportValue': !Sub '${StackNameIPerfClient}-${SubnetIPerfClient}'}
           PrivateIpAddresses:
-            - PrivateIpAddress: !Ref IperfClientIPAddress
+            - PrivateIpAddress: !Ref IPAddressIPerfClient
               Primary: true
       Tags:
       - Key: Name

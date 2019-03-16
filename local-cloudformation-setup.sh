@@ -6,26 +6,26 @@ set -e
 # Create the Cloudformation VPC-only stack from the local template `cloudformation-vpc-main.yaml`
 AWS_ACCOUNT_ID="$(aws sts get-caller-identity | jq -r '.Account')" \
 SSH_LOCATION="$(curl ifconfig.co 2> /dev/null)/32"
-MAIN_VPC_STACK_NAME="MainVPCStack"
+STACK_NAME_VPC_MAIN="StackMainVPC"
 aws cloudformation create-stack \
-  --stack-name "${MAIN_VPC_STACK_NAME}" \
+  --stack-name "${STACK_NAME_VPC_MAIN}" \
   --template-body file://cloudformation-vpc-main.yaml \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameters ParameterKey=SSHLocation,ParameterValue="${SSH_LOCATION}" \
                ParameterKey=PeerRequesterAccountId,ParameterValue="${AWS_ACCOUNT_ID}"
 
 echo "Waiting until the Cloudformation VPC main stack is CREATE_COMPLETE"
-aws cloudformation wait stack-create-complete --stack-name "${MAIN_VPC_STACK_NAME}"
+aws cloudformation wait stack-create-complete --stack-name "${STACK_NAME_VPC_MAIN}"
 
 # Create the Cloudformation VPC-only stack from the local template `cloudformation-vpc-sub.yaml`
-SUB_VPC_STACK_NAME="SubVPCStack"
+SUB_VPC_STACK_NAME="StackSubVPC"
 aws cloudformation create-stack \
   --stack-name "${SUB_VPC_STACK_NAME}" \
   --template-body file://cloudformation-vpc-sub.yaml \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameters ParameterKey=SSHLocation,ParameterValue="${SSH_LOCATION}" \
                ParameterKey=PeerVPCAccountId,ParameterValue="${AWS_ACCOUNT_ID}" \
-               ParameterKey=VPCMainStack,ParameterValue="${MAIN_VPC_STACK_NAME}"
+               ParameterKey=VPCMainStack,ParameterValue="${STACK_NAME_VPC_MAIN}"
 
 echo "Waiting until the Cloudformation VPC sub stack is CREATE_COMPLETE"
 aws cloudformation wait stack-create-complete --stack-name "${SUB_VPC_STACK_NAME}"

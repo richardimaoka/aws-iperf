@@ -7,7 +7,7 @@ Parameters:
     MaxLength: "18"
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
-  VPCMainStack:
+  StackNameVPCMain:
     Type: String
   PeerVPCAccountId:
     Type: String
@@ -25,9 +25,9 @@ Resources:
     Type: 'AWS::EC2::VPCPeeringConnection'
     Properties:
       VpcId: !Ref VPC
-      PeerVpcId:  {'Fn::ImportValue': !Sub '${VPCMainStack}-VPCId'}
+      PeerVpcId:  {'Fn::ImportValue': !Sub '${StackNameVPCMain}-VPCId'}
       PeerOwnerId: !Ref PeerVPCAccountId
-      PeerRoleArn: {'Fn::ImportValue': !Sub '${VPCMainStack}-RoleArn'}
+      PeerRoleArn: {'Fn::ImportValue': !Sub '${StackNameVPCMain}-RoleArn'}
   Subnet:
     Type: AWS::EC2::Subnet
     Properties:

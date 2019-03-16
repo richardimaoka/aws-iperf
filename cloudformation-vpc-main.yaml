@@ -135,7 +135,7 @@ Outputs:
     Description: VPC
     Value: !Ref VPC
     Export:
-      Name: !Sub "${AWS::StackName}-VPC"
+      Name: !Sub "${AWS::StackName}-VPCId"
   SecurityGroup:
     Description: SecurityGroup
     Value: !Ref SecurityGroup
