@@ -6,7 +6,7 @@ set -e
 # Create the Cloudformation VPC-only stack from the local template `cloudformation-vpc-main.yaml`
 AWS_ACCOUNT_ID="$(aws sts get-caller-identity | jq -r '.Account')" \
 SSH_LOCATION="$(curl ifconfig.co 2> /dev/null)/32"
-STACK_NAME_VPC_MAIN="StackMainVPC"
+STACK_NAME_VPC_MAIN="StackNameVPCMain"
 aws cloudformation create-stack \
   --stack-name "${STACK_NAME_VPC_MAIN}" \
   --template-body file://cloudformation-vpc-main.yaml \
@@ -18,7 +18,7 @@ echo "Waiting until the Cloudformation VPC main stack is CREATE_COMPLETE"
 aws cloudformation wait stack-create-complete --stack-name "${STACK_NAME_VPC_MAIN}"
 
 # Create the Cloudformation VPC-only stack from the local template `cloudformation-vpc-sub.yaml`
-SUB_VPC_STACK_NAME="StackSubVPC"
+SUB_VPC_STACK_NAME="StackNameVPCSub"
 aws cloudformation create-stack \
   --stack-name "${SUB_VPC_STACK_NAME}" \
   --template-body file://cloudformation-vpc-sub.yaml \

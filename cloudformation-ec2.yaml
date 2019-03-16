@@ -16,13 +16,13 @@ Parameters:
     Description: iperf server's stack name
     Type: String
     AllowedValues:
-      - StackNameMainVPC
+      - StackNameVPCMain
   StackNameIPerfClient:
     Description: iperf client's stack name
     Type: String
     AllowedValues:
-      - StackNameMainVPC
-      - StackNameSubVPC
+      - StackNameVPCMain
+      - StackNameVPCSub
   SubnetIPerfServer:
     Description: iperf server's stack name
     Type: String
