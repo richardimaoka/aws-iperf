@@ -42,6 +42,6 @@ do
                  ParameterKey=StackNameIPerfClient,ParameterValue="$(echo ${params} | jq -r '.stack_name_iperf_client')" \
                  ParameterKey=SubnetIPerfServer,ParameterValue="$(echo ${params} | jq -r '.subnet_iperf_server')" \
                  ParameterKey=SubnetIPerfClient,ParameterValue="$(echo ${params} | jq -r '.subnet_iperf_client')" \
-                 ParameterKey=IPAddressIPerfServer,ParameterValue="$(echo ${params} | jq -r '.ip_address_iperf_server')" \
-                 ParameterKey=IPAddressIPerfClient,ParameterValue="$(echo ${params} | jq -r '.ip_address_iperf_client')"
+                 ParameterKey=IPAddressIPerfServer,ParameterValue="$(echo ${params} | jq -r '.local_ip_iperf_server')" \
+                 ParameterKey=IPAddressIPerfClient,ParameterValue="$(echo ${params} | jq -r '.local_ip_iperf_client')"
 done

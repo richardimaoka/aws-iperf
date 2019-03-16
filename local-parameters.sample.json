@@ -1,6 +1,5 @@
 [
   {
-    "test_seq_num": 1,
     "stack_name_iperf_server": "StackNameMainVPC",
     "stack_name_iperf_client": "StackNameMainVPC",
     "subnet_iperf_server": "SubnetSameAZ",
